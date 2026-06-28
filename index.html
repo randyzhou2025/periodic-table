@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>元素周期表速记图谱</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="topbar" aria-label="页面标题">
+        <div class="brand-lockup">
+          <span class="brand-badge" aria-hidden="true"><i></i></span>
+          <h1><span>元素周期表</span><strong>速记图谱</strong></h1>
+        </div>
+        <div class="topbar-actions">
+          <button id="studyPanelButton" class="mnemonic-button" type="button" aria-expanded="false" aria-controls="studyStrip">初高中重点知识</button>
+          <button id="mnemonicButton" class="mnemonic-button" type="button">速记口诀</button>
+        </div>
+        <div class="atom-mark" aria-hidden="true">
+          <span class="nucleus"></span>
+          <span class="orbit orbit-one"><i></i></span>
+          <span class="orbit orbit-two"><i></i></span>
+          <span class="orbit orbit-three"><i></i></span>
+        </div>
+      </section>
+
+      <section id="studyStrip" class="study-strip" aria-label="快速学习重点" hidden>
+        <div class="study-strip-head">
+          <div>
+            <p>初高中重点知识</p>
+          </div>
+          <button id="studyToggle" class="study-toggle" type="button" aria-expanded="true" aria-controls="studyContent">
+            <span>隐藏</span>
+          </button>
+        </div>
+        <div id="studyContent" class="study-content">
+          <article class="study-group">
+            <p>初中</p>
+            <div class="study-buttons">
+              <button class="study-button" type="button" data-study-note="top20"><span class="study-order">①</span><span class="study-name">前20号元素</span><span class="study-priority">必背</span></button>
+              <button class="study-button" type="button" data-study-note="valence"><span class="study-order">②</span><span class="study-name">常见化合价</span><span class="study-priority">必背</span></button>
+              <button class="study-button" type="button" data-study-note="activity"><span class="study-order">③</span><span class="study-name">活动性顺序</span><span class="study-priority">必背</span></button>
+              <button class="study-button" type="button" data-study-note="mass"><span class="study-order">④</span><span class="study-name">相对原子质量</span><span class="study-priority">高频</span></button>
+              <button class="study-button" type="button" data-study-note="aliases"><span class="study-order">⑤</span><span class="study-name">物质俗名</span><span class="study-priority">高频</span></button>
+              <button class="study-button" type="button" data-study-note="precipitation"><span class="study-order">⑥</span><span class="study-name">沉淀与颜色</span><span class="study-priority">高频</span></button>
+            </div>
+          </article>
+          <article class="study-group">
+            <p>高中</p>
+            <div class="study-buttons">
+              <button class="study-button" type="button" data-study-note="first36"><span class="study-order">①</span><span class="study-name">前36号元素</span><span class="study-priority">必背</span></button>
+              <button class="study-button" type="button" data-study-note="mainGroups"><span class="study-order">②</span><span class="study-name">主族元素</span><span class="study-priority">必背</span></button>
+              <button class="study-button" type="button" data-study-note="electronConfig"><span class="study-order">③</span><span class="study-name">电子排布</span><span class="study-priority">高频</span></button>
+              <button class="study-button" type="button" data-study-note="periodicLaw"><span class="study-order">④</span><span class="study-name">周期律</span><span class="study-priority">必背</span></button>
+              <button class="study-button" type="button" data-study-note="structureProperty"><span class="study-order">⑤</span><span class="study-name">位构性</span><span class="study-priority">必背</span></button>
+              <button class="study-button" type="button" data-study-note="inference"><span class="study-order">⑥</span><span class="study-name">推断技巧</span><span class="study-priority">高频</span></button>
+              <button class="study-button" type="button" data-study-note="transitionTraits"><span class="study-order">⑦</span><span class="study-name">过渡金属</span><span class="study-priority">高频</span></button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="stage" aria-label="元素周期表学习区">
+        <div class="table-panel">
+          <div class="panel-heading">
+            <div>
+              <p id="modeTitle" class="section-label">前二十元素</p>
+              <h2 id="modeHint">用口诀先打底，再把每个元素放回周期表。</h2>
+            </div>
+          </div>
+
+          <div id="legend" class="legend" aria-label="颜色图例"></div>
+
+          <div class="periodic-scroll" aria-label="完整元素周期表">
+            <div id="periodicTable" class="periodic-table" aria-label="元素周期表">
+              <div class="table-tools">
+                <button id="guideToggle" class="guide-toggle" type="button" aria-expanded="false" aria-controls="elementGuide">
+                  <span aria-hidden="true">?</span> 元素图说明
+                </button>
+              </div>
+              <div id="elementGuide" class="element-guide" aria-label="元素格示例说明" hidden>
+                <div class="guide-callout guide-callout-number">原子序数</div>
+                <div class="guide-callout guide-callout-name">元素名称</div>
+                <div class="guide-card is-radioactive">
+                  <span class="atomic-number">92</span>
+                  <span class="atomic-mass">238.0</span>
+                  <strong class="symbol">U</strong>
+                  <span class="name">铀<em>yóu</em></span>
+                </div>
+                <div class="guide-callout guide-callout-mass">相对原子质量</div>
+                <div class="guide-callout guide-callout-symbol">
+                  <span>元素符号，红色表示放射性元素<br />* 为人造元素</span>
+                </div>
+                <div class="guide-callout guide-callout-pronunciation">元素拼音</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside id="detailPanel" class="detail-panel" aria-label="元素详情" aria-hidden="true">
+          <button id="drawerClose" class="drawer-close" type="button" aria-label="关闭详情">×</button>
+
+          <div id="elementDrawer" class="drawer-view">
+            <p class="section-label">当前元素</p>
+            <div class="element-hero">
+              <span id="detailNumber" class="detail-number">1</span>
+              <div>
+                <p class="detail-symbol-row">
+                  <span id="detailSymbol" class="detail-symbol">H</span>
+                  <span id="detailMass" class="detail-mass">相对原子质量：1.008</span>
+                </p>
+                <h2><span id="detailName">氢</span><span id="detailPronunciation" class="detail-pronunciation">qīng</span></h2>
+                <p id="detailEnglish" class="detail-english">Hydrogen</p>
+                <p id="detailPriority" class="priority-badge">A 初高中高频/建议重点背</p>
+              </div>
+            </div>
+
+            <section id="symbolMnemonicCard" class="symbol-mnemonic-card" hidden>
+              <p>元素符号速记</p>
+              <div>
+                <strong id="symbolMnemonicSymbol">H</strong>
+                <span id="symbolMnemonicText">下面的工旋转后90°就是H</span>
+              </div>
+            </section>
+
+            <dl class="facts detail-facts">
+              <div>
+                <dt>位置</dt>
+                <dd id="detailPosition">第1周期｜第1族</dd>
+              </div>
+              <div>
+                <dt>分类</dt>
+                <dd id="detailFamily">s区｜非金属</dd>
+              </div>
+              <div>
+                <dt>化合价 / 离子</dt>
+                <dd id="detailValence">＋1；H⁺</dd>
+              </div>
+              <div>
+                <dt>考点</dt>
+                <dd id="detailExam">初中：名称、符号、化合价、常见物质和方程式。</dd>
+              </div>
+              <div>
+                <dt>常见物质 / 现象</dt>
+                <dd id="detailCommon">H₂、H₂O、HCl；氢气可燃。</dd>
+              </div>
+              <div>
+                <dt>易错提醒</dt>
+                <dd id="detailMemory">氢排第1但不是碱金属。</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div id="noteDrawer" class="drawer-view" hidden>
+            <p id="noteLabel" class="section-label">速记卡</p>
+            <h2 id="noteTitle" class="note-title">前二十口诀</h2>
+            <div id="noteBody" class="note-body"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="./app.min.js"></script>
+  </body>
+</html>

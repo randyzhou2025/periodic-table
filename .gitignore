@@ -1,0 +1,5 @@
+# 视频制作工作目录（本地素材，不纳入版本库）
+video_work/
+
+# macOS
+.DS_Store

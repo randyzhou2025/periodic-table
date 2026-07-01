@@ -55,7 +55,7 @@ textarea {
   gap: 12px;
   align-items: center;
   min-height: 82px;
-  padding: 12px 18px;
+  padding: 1px 18px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -330,7 +330,7 @@ h1 strong {
   align-items: center;
   margin: 0 0 3px;
   color: var(--gold);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 900;
   line-height: 1;
 }
@@ -575,6 +575,7 @@ body.is-compact-header .orbit {
 }
 
 .periodic-scroll {
+  container-type: inline-size;
   overflow: visible;
   padding: 6px 0 12px;
 }
@@ -723,7 +724,7 @@ body.is-compact-header .orbit {
 
 .guide-card .name em {
   color: rgba(23, 51, 31, 0.68);
-  font-size: 0.72em;
+  font-size: 0.86em;
 }
 
 .guide-card .atomic-number {
@@ -843,10 +844,12 @@ body.is-compact-header .orbit {
   aspect-ratio: 1.05 / 1;
   padding: clamp(4px, 0.48vw, 8px);
   color: #fffaf0;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 6px;
-  background: color-mix(in srgb, var(--family-color) 34%, rgba(20, 18, 15, 0.96));
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--family-color) 46%, rgba(20, 18, 15, 0.92));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 14px color-mix(in srgb, var(--family-color) 18%, transparent);
   cursor: pointer;
   opacity: 0;
   transform: translateY(10px) scale(0.96);
@@ -864,10 +867,10 @@ body.is-compact-header .orbit {
   overflow: hidden;
   aspect-ratio: 1.05 / 1;
   padding: clamp(4px, 0.48vw, 8px);
-  color: color-mix(in srgb, var(--family-color) 76%, white);
-  border: 1px dashed color-mix(in srgb, var(--family-color) 48%, rgba(255, 255, 255, 0.28));
+  color: color-mix(in srgb, var(--family-color) 84%, white);
+  border: 1px dashed color-mix(in srgb, var(--family-color) 60%, rgba(255, 255, 255, 0.34));
   border-radius: 6px;
-  background: color-mix(in srgb, var(--family-color) 18%, rgba(20, 18, 15, 0.92));
+  background: color-mix(in srgb, var(--family-color) 30%, rgba(20, 18, 15, 0.9));
   opacity: 0;
   transform: translateY(10px) scale(0.96);
   animation: tileIn 520ms ease forwards;
@@ -991,9 +994,51 @@ body.is-compact-header .orbit {
 .name em {
   margin-left: 2px;
   color: rgba(255, 255, 255, 0.62);
-  font-size: 0.72em;
+  font-size: 1.10em;
   font-style: normal;
   font-weight: 800;
+}
+
+@container (max-width: 800px) {
+  .element {
+    place-items: center;
+    padding: 3px;
+  }
+
+  .series-placeholder {
+    display: grid;
+    place-items: center;
+    gap: 0;
+  }
+
+  .element .atomic-number,
+  .element .atomic-mass,
+  .element .name,
+  .element .synthetic-mark,
+  .series-placeholder strong,
+  .series-placeholder span {
+    display: none;
+  }
+
+  .symbol {
+    margin-top: 0;
+    font-size: clamp(15px, 2.2vw, 28px);
+  }
+
+  .series-placeholder::after {
+    color: color-mix(in srgb, var(--family-color) 74%, white);
+    font-size: clamp(15px, 2.2vw, 28px);
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .series-placeholder.cat-lanthanide::after {
+    content: "La";
+  }
+
+  .series-placeholder.cat-actinide::after {
+    content: "Ac";
+  }
 }
 
 .legend {

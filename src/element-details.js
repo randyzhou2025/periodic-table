@@ -413,7 +413,7 @@ window.elementDetails = {
     "priorityText": "初高中高频/建议重点背",
     "valence": "＋2、＋3；Fe²⁺/Fe³⁺",
     "study": "初中：名称、符号、化合价、常见物质和方程式。\n高中：结合周期律、离子反应、氧化还原或实验现象。",
-    "common": "FeO、Fe₂O₃、FeCl₂、FeCl₃、FeSO₄；铁锈、置换反应、二三价转换。",
+    "common": "FeO、Fe₂O₃、FeCl₂、FeCl₃、FeSO₄；Fe³⁺遇KSCN溶液显血红色。",
     "hook": "铁有＋2和＋3，写化学式时最容易错。"
   },
   "27": {

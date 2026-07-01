@@ -913,7 +913,7 @@ studyButtons.forEach((button) => {
 });
 
 function syncCompactHeader() {
-  document.body.classList.toggle("is-compact-header", window.innerWidth > 620 && window.scrollY >= 24);
+  document.body.classList.remove("is-compact-header");
 }
 
 function setStudyPanelVisible(isVisible) {

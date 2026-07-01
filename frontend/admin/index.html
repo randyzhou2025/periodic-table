@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>授权码管理 · 元素周期表</title>
+    <link rel="stylesheet" href="/ptoe/login.css?v=2" />
+    <link rel="stylesheet" href="/ptoe/admin/admin.css?v=2" />
+  </head>
+  <body>
+    <main class="login-shell admin-shell">
+      <section id="loginPanel" class="login-card">
+        <p class="login-kicker">Periodic Table Admin</p>
+        <h1>管理后台登录</h1>
+        <p class="login-lead">请输入管理员账号密码。</p>
+
+        <form id="adminLoginForm" class="login-form" novalidate>
+          <label for="usernameInput">用户名</label>
+          <input id="usernameInput" name="username" type="text" autocomplete="username" required />
+
+          <label for="passwordInput">密码</label>
+          <input id="passwordInput" name="password" type="password" autocomplete="current-password" required />
+
+          <p id="loginError" class="error-box" hidden></p>
+          <button id="loginButton" type="button">登录</button>
+        </form>
+      </section>
+
+      <section id="dashboardPanel" class="login-card admin-card admin-grid" hidden>
+        <div id="adminNavMount"></div>
+
+        <div class="admin-head">
+          <div>
+            <p class="login-kicker">Periodic Table Admin</p>
+            <h1>授权码管理</h1>
+            <p class="login-lead">新授权码明文仅显示一次，请立即复制保存。</p>
+          </div>
+          <button id="logoutButton" class="ghost-button" type="button">退出登录</button>
+        </div>
+
+        <div class="toolbar">
+          <div>
+            <label for="buyerNoteInput">新建备注</label>
+            <input id="buyerNoteInput" type="text" placeholder="例如：微信-张三" />
+          </div>
+          <button id="createCodeButton" type="button">生成授权码</button>
+        </div>
+
+        <div id="newCodeBox" class="new-code-box" hidden></div>
+        <p id="adminError" class="error-box" hidden></p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>前缀</th>
+                <th>状态</th>
+                <th>设备</th>
+                <th>备注</th>
+                <th>创建时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="codesBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script src="/ptoe/admin/common.js?v=3"></script>
+    <script src="/ptoe/admin/codes.js?v=3"></script>
+  </body>
+</html>

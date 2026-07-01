@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>激活授权</title>
+    <link rel="stylesheet" href="./login.css" />
+  </head>
+  <body>
+    <main class="login-shell">
+      <section class="login-card">
+        <p class="login-kicker"></p>
+        <h1>输入授权码</h1>
+        <p class="login-lead">激活后可在此设备访问。每码支持 <strong id="maxDevices">2</strong> 台设备。</p>
+
+        <form id="loginForm" class="login-form">
+          <label for="codeInput">授权码</label>
+          <input
+            id="codeInput"
+            name="code"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="PTOE-XXXX-XXXX"
+            maxlength="17"
+          />
+          <p id="deviceUsage" class="device-usage" hidden></p>
+          <p id="errorBox" class="error-box" hidden></p>
+          <button id="submitButton" type="submit">激活并进入</button>
+        </form>
+
+        <div class="login-help">
+          <p>设备位已满？可先在本机解除绑定，或通过以下方式联系管理员：</p>
+          <ul>
+            <li>邮箱：<a id="contactEmail" href="mailto:103620995@qq.com">103620995@qq.com</a></li>
+          </ul>
+          <button id="logoutButton" class="ghost-button" type="button" hidden>解除本机绑定</button>
+        </div>
+      </section>
+    </main>
+    <script src="./login.js"></script>
+  </body>
+</html>

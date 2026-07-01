@@ -1,0 +1,163 @@
+[hidden] {
+  display: none !important;
+}
+
+#adminLoginForm input {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 16px;
+}
+
+.admin-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 14px;
+  color: rgba(247, 241, 230, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.admin-nav-link:hover {
+  color: var(--paper);
+  border-color: rgba(255, 200, 74, 0.45);
+}
+
+.admin-nav-link.is-active {
+  color: #16130f;
+  border-color: rgba(255, 200, 74, 0.72);
+  background: var(--gold);
+}
+
+.admin-shell {
+  width: min(960px, 100%);
+}
+
+.admin-card {
+  width: 100%;
+}
+
+.admin-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.toolbar,
+.table-wrap {
+  display: grid;
+  gap: 10px;
+}
+
+.toolbar {
+  grid-template-columns: 1fr auto;
+  align-items: end;
+}
+
+.toolbar input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  color: var(--paper);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.toolbar button,
+#loginButton {
+  min-height: 42px;
+  padding: 0 16px;
+  color: #16130f;
+  border: 1px solid rgba(255, 200, 74, 0.72);
+  border-radius: 999px;
+  background: var(--gold);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tag {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tag.active {
+  color: #16130f;
+  background: var(--green);
+}
+
+.tag.disabled {
+  color: var(--paper);
+  background: rgba(255, 107, 95, 0.35);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.actions button {
+  min-height: 30px;
+  padding: 0 10px;
+  color: var(--paper);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.new-code-box {
+  padding: 12px;
+  border: 1px solid rgba(255, 200, 74, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 200, 74, 0.08);
+  color: var(--gold);
+  font-weight: 800;
+}
+
+@media (max-width: 720px) {
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-head {
+    flex-direction: column;
+  }
+}

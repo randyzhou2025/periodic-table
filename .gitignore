@@ -1,5 +1,21 @@
-# 视频制作工作目录（本地素材，不纳入版本库）
-video_work/
+# Dependencies
+node_modules/
+backend/node_modules/
+backend/dist/
+
+# Environment
+.env
+.env.*
+.env.prod
+!.env.example
+deploy/.env.prod
 
 # macOS
 .DS_Store
+
+# Video work
+video_work/
+
+# Local style experiments
+frontend/src/styles.backup-before-brighter-elements.css
+frontend/src/styles.brighter-elements.css

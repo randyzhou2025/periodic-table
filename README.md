@@ -68,12 +68,12 @@ location /ptoe/ {
 ### CLI
 
 ```bash
-docker compose -f docker-compose.prod.yml --env-file .env.prod exec ptoe_api npm run admin:create-code -- --note "微信-张三" --devices 2
+docker compose -f docker-compose.prod.yml --env-file .env.prod exec ptoe_api npm run admin:create-code -- --note "微信-张三" --devices 1
 ```
 
 ## 授权规则（v0.3）
 
-- 每码 2 台设备；Cookie 90 天；30 天无访问释放设备位
+- 每码 1 台设备；Cookie 90 天；30 天无访问释放设备位
 - 授权码格式 `PTOE-XXXX-XXXX`，验证不区分大小写
 - `/ptoe/` 下静态资源全部鉴权，未登录跳转 `/ptoe/login`
 

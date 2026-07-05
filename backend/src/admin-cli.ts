@@ -47,6 +47,6 @@ if (command === "create-code") {
       process.exit(1);
     });
 } else {
-  console.error("用法: npm run admin:create-code -- [--note 备注] [--devices 2]");
+  console.error("用法: npm run admin:create-code -- [--note 备注] [--devices 1]");
   process.exit(1);
 }

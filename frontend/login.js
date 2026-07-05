@@ -4,20 +4,66 @@ const DEVICE_KEY = "ptoe_device_id";
 const form = document.getElementById("loginForm");
 const codeInput = document.getElementById("codeInput");
 const errorBox = document.getElementById("errorBox");
+const errorPanel = document.getElementById("errorPanel");
 const deviceUsage = document.getElementById("deviceUsage");
 const submitButton = document.getElementById("submitButton");
 const logoutButton = document.getElementById("logoutButton");
+const loginHelpLead = document.getElementById("loginHelpLead");
+const unbindHelpButton = document.getElementById("unbindHelpButton");
+const unbindHelpDialog = document.getElementById("unbindHelpDialog");
 const maxDevicesEl = document.getElementById("maxDevices");
 const contactWechatEl = document.getElementById("contactWechat");
 const contactEmailEl = document.getElementById("contactEmail");
 
+const DEFAULT_HELP = "激活遇到问题？可通过以下方式联系管理员：";
+
+function createDeviceId() {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+  const bytes = new Uint8Array(16);
+  if (globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i += 1) {
+      bytes[i] = Math.floor(Math.random() * 256);
+    }
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 function getDeviceId() {
   let id = localStorage.getItem(DEVICE_KEY);
   if (!id) {
-    id = crypto.randomUUID();
+    id = createDeviceId();
     localStorage.setItem(DEVICE_KEY, id);
   }
   return id;
+}
+
+function collectDeviceInfo() {
+  return {
+    screen: `${window.screen.width}x${window.screen.height}@${window.devicePixelRatio || 1}`,
+    platform: navigator.userAgentData?.platform || navigator.platform || "",
+    language: navigator.language || "",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+  };
+}
+
+function buildDeviceLabel() {
+  const ua = navigator.userAgent;
+  let device = "未知设备";
+  if (/iPhone/i.test(ua)) device = "iPhone";
+  else if (/iPad/i.test(ua)) device = "iPad";
+  else if (/Android/i.test(ua)) device = "Android";
+  else if (/Mac/i.test(ua)) device = "Mac";
+  else if (/Windows/i.test(ua)) device = "Windows";
+
+  const info = collectDeviceInfo();
+  return `${device} · ${info.screen} · ${info.language}`.slice(0, 255);
 }
 
 function getNextPath() {
@@ -29,14 +75,23 @@ function getNextPath() {
   return "/ptoe/";
 }
 
-function showError(message) {
-  errorBox.hidden = false;
+function showError(message, options = {}) {
+  errorPanel.hidden = false;
   errorBox.textContent = message;
+  unbindHelpButton.hidden = !options.showUnbindHelp;
 }
 
 function clearError() {
-  errorBox.hidden = true;
+  errorPanel.hidden = true;
   errorBox.textContent = "";
+  unbindHelpButton.hidden = true;
+}
+
+function resetLoginHelp() {
+  if (loginHelpLead) loginHelpLead.textContent = DEFAULT_HELP;
+  deviceUsage.hidden = true;
+  logoutButton.hidden = true;
+  clearError();
 }
 
 function formatCodeInput(value) {
@@ -54,7 +109,7 @@ async function loadPublicConfig() {
   if (!res.ok) return;
   const data = await res.json();
   if (data.maxDevicesDefault) maxDevicesEl.textContent = String(data.maxDevicesDefault);
-  if (data.contactWechat) contactWechatEl.textContent = data.contactWechat;
+  if (data.contactWechat && contactWechatEl) contactWechatEl.textContent = data.contactWechat;
   if (data.contactEmail) {
     contactEmailEl.textContent = data.contactEmail;
     contactEmailEl.href = `mailto:${data.contactEmail}`;
@@ -73,15 +128,14 @@ async function checkExistingSession() {
 
 async function logoutCurrentDevice() {
   await fetch(`${API_BASE}/logout`, { method: "POST", credentials: "include" });
-  deviceUsage.hidden = true;
-  logoutButton.hidden = true;
+  resetLoginHelp();
   clearError();
   showError("已解除本机绑定，可重新输入授权码。");
 }
 
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  clearError();
+  resetLoginHelp();
   submitButton.disabled = true;
 
   try {
@@ -92,18 +146,23 @@ form?.addEventListener("submit", async (event) => {
       body: JSON.stringify({
         code: codeInput.value,
         deviceId: getDeviceId(),
-        deviceLabel: navigator.userAgent.slice(0, 120),
+        deviceLabel: buildDeviceLabel(),
+        deviceInfo: collectDeviceInfo(),
       }),
     });
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      if (data.devicesUsed != null && data.devicesMax != null) {
-        deviceUsage.hidden = false;
-        deviceUsage.textContent = `当前已用 ${data.devicesUsed}/${data.devicesMax} 台设备`;
-        logoutButton.hidden = false;
+      if (data.code === "DEVICE_LIMIT") {
+        if (data.devicesUsed != null && data.devicesMax != null) {
+          deviceUsage.hidden = false;
+          deviceUsage.textContent = `当前已用 ${data.devicesUsed}/${data.devicesMax} 台设备`;
+        }
+        logoutButton.hidden = true;
+        showError(data.message || "激活失败，请稍后重试", { showUnbindHelp: true });
+      } else {
+        showError(data.message || "激活失败，请稍后重试");
       }
-      showError(data.message || "激活失败，请稍后重试");
       return;
     }
 
@@ -122,9 +181,14 @@ form?.addEventListener("submit", async (event) => {
 
 codeInput?.addEventListener("input", () => {
   codeInput.value = formatCodeInput(codeInput.value);
+  resetLoginHelp();
 });
 
 logoutButton?.addEventListener("click", logoutCurrentDevice);
+
+unbindHelpButton?.addEventListener("click", () => {
+  unbindHelpDialog?.showModal();
+});
 
 loadPublicConfig();
 checkExistingSession();

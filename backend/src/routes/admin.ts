@@ -13,6 +13,7 @@ import {
   verifyAdminSessionToken,
 } from "../lib/admin-auth.js";
 import { generateLicenseCode } from "../lib/code.js";
+import { resolveIpLocation } from "../lib/ip-location.js";
 import { clientIpFromRequest } from "../lib/client-ip.js";
 import { codePrefixFromNormalized, hashLicenseCode } from "../lib/hash.js";
 import { checkRateLimit, recordFailure } from "../lib/rate-limit.js";
@@ -196,16 +197,21 @@ export async function registerAdminRoutes(app: FastifyInstance, config: AppConfi
       .orderBy(desc(activationLogs.createdAt))
       .limit(limit);
     return {
-      logs: rows.map((row) => ({
-        id: row.log.id,
-        eventType: row.log.eventType,
-        ip: row.log.ip,
-        userAgent: row.log.userAgent,
-        meta: row.log.meta,
-        createdAt: row.log.createdAt,
-        codePrefix: row.codePrefix,
-        buyerNote: row.buyerNote,
-      })),
+      logs: rows.map((row) => {
+        const metaPrefix =
+          row.log.meta && typeof row.log.meta.codePrefix === "string" ? row.log.meta.codePrefix : null;
+        return {
+          id: row.log.id,
+          eventType: row.log.eventType,
+          ip: row.log.ip,
+          ipLocation: resolveIpLocation(row.log.ip),
+          userAgent: row.log.userAgent,
+          meta: row.log.meta,
+          createdAt: row.log.createdAt,
+          codePrefix: row.codePrefix ?? metaPrefix,
+          buyerNote: row.buyerNote,
+        };
+      }),
     };
   });
 
@@ -239,6 +245,7 @@ export async function registerAdminRoutes(app: FastifyInstance, config: AppConfi
           deviceId: row.session.deviceId,
           deviceLabel: row.session.deviceLabel,
           lastIp: row.session.lastIp,
+          ipLocation: resolveIpLocation(row.session.lastIp),
           expiresAt: row.session.expiresAt,
           lastSeenAt: row.session.lastSeenAt,
           createdAt: row.session.createdAt,

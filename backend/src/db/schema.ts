@@ -4,7 +4,7 @@ export const licenseCodes = pgTable("license_codes", {
   id: uuid("id").primaryKey().defaultRandom(),
   codeHash: varchar("code_hash", { length: 64 }).notNull().unique(),
   codePrefix: varchar("code_prefix", { length: 16 }).notNull(),
-  maxDevices: integer("max_devices").notNull().default(2),
+  maxDevices: integer("max_devices").notNull().default(1),
   status: varchar("status", { length: 20 }).notNull().default("active"),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
   buyerNote: varchar("buyer_note", { length: 255 }),

@@ -7,6 +7,19 @@ const EVENT_LABELS = {
   logout: "解绑退出",
 };
 
+const EVENT_TAG_CLASS = {
+  login_success: "success",
+  login_fail: "fail",
+  logout: "neutral",
+};
+
+const REASON_LABELS = {
+  invalid_format: "授权码格式无效",
+  invalid_or_disabled: "授权码无效或已停用",
+  code_expired: "授权码已过期",
+  device_limit: "设备位已满",
+};
+
 function showAdminError(message) {
   AdminShell.showMessage(adminError, message);
 }
@@ -15,11 +28,39 @@ function clearAdminError() {
   AdminShell.showMessage(adminError, "");
 }
 
-function formatMeta(meta) {
-  if (!meta || typeof meta !== "object") return "—";
-  const reason = meta.reason ? `原因：${meta.reason}` : "";
-  const deviceId = meta.deviceId ? `设备：${String(meta.deviceId).slice(0, 8)}…` : "";
-  return [reason, deviceId].filter(Boolean).join(" / ") || "—";
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function formatDetails(log) {
+  const meta = log.meta;
+  const parts = [];
+
+  if (meta && typeof meta === "object") {
+    if (meta.reason) {
+      const reason = REASON_LABELS[meta.reason] || meta.reason;
+      parts.push(`原因：${reason}`);
+    }
+    if (meta.devicesUsed != null && meta.devicesMax != null) {
+      parts.push(`设备占用：${meta.devicesUsed}/${meta.devicesMax}`);
+    }
+    if (meta.deviceLabel) parts.push(`设备：${meta.deviceLabel}`);
+    if (meta.deviceId) parts.push(`设备 ID：${meta.deviceId}`);
+    if (meta.screen) parts.push(`屏幕：${meta.screen}`);
+    if (meta.platform) parts.push(`平台：${meta.platform}`);
+    if (meta.language) parts.push(`语言：${meta.language}`);
+    if (meta.timezone) parts.push(`时区：${meta.timezone}`);
+  }
+
+  if (log.userAgent) {
+    parts.push(`UA：${log.userAgent}`);
+  }
+
+  return parts.length ? parts.join("\n") : "—";
 }
 
 function renderLogs(logs) {
@@ -28,11 +69,12 @@ function renderLogs(logs) {
       (log) => `
       <tr>
         <td>${AdminShell.formatDate(log.createdAt)}</td>
-        <td><span class="tag ${log.eventType === "login_fail" ? "disabled" : "active"}">${EVENT_LABELS[log.eventType] || log.eventType}</span></td>
-        <td>${log.codePrefix || "—"}</td>
-        <td>${log.buyerNote || "—"}</td>
-        <td>${log.ip || "—"}</td>
-        <td>${formatMeta(log.meta)}</td>
+        <td class="log-event"><span class="tag ${EVENT_TAG_CLASS[log.eventType] || "neutral"}">${EVENT_LABELS[log.eventType] || log.eventType}</span></td>
+        <td>${escapeHtml(log.codePrefix || "—")}</td>
+        <td>${escapeHtml(log.buyerNote || "—")}</td>
+        <td>${escapeHtml(log.ip || "—")}</td>
+        <td class="log-location">${escapeHtml(log.ipLocation || "—")}</td>
+        <td class="log-details">${escapeHtml(formatDetails(log))}</td>
       </tr>`
     )
     .join("");

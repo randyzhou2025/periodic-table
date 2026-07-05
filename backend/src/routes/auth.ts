@@ -5,9 +5,9 @@ import { db } from "../db/index.js";
 import { licenseCodes, sessions } from "../db/schema.js";
 import type { AppConfig } from "../lib/config.js";
 import { SESSION_COOKIE } from "../lib/config.js";
-import { normalizeLicenseCode } from "../lib/code.js";
+import { normalizeLicenseCode, codePrefixFromInput } from "../lib/code.js";
 import { clientIpFromRequest } from "../lib/client-ip.js";
-import { hashLicenseCode } from "../lib/hash.js";
+import { codePrefixFromNormalized, hashLicenseCode, hashSessionToken } from "../lib/hash.js";
 import { checkRateLimit, recordFailure } from "../lib/rate-limit.js";
 import {
   clearSessionCookie,
@@ -20,11 +20,33 @@ import {
   setSessionCookie,
 } from "../lib/session.js";
 
+const deviceInfoSchema = z
+  .object({
+    screen: z.string().max(32).optional(),
+    platform: z.string().max(64).optional(),
+    language: z.string().max(32).optional(),
+    timezone: z.string().max(64).optional(),
+  })
+  .optional();
+
 const loginSchema = z.object({
   code: z.string().min(8).max(32),
   deviceId: z.string().min(8).max(128),
   deviceLabel: z.string().max(255).optional(),
+  deviceInfo: deviceInfoSchema,
 });
+
+function buildActivationMeta(
+  parsed: z.infer<typeof loginSchema>,
+  extra?: Record<string, unknown>
+): Record<string, unknown> {
+  return {
+    deviceId: parsed.deviceId,
+    ...(parsed.deviceLabel ? { deviceLabel: parsed.deviceLabel } : {}),
+    ...(parsed.deviceInfo ?? {}),
+    ...extra,
+  };
+}
 
 function readSessionCookie(request: FastifyRequest): string | undefined {
   const cookies = request.cookies as Record<string, string | undefined>;
@@ -89,9 +111,10 @@ export async function registerAuthRoutes(app: FastifyInstance, config: AppConfig
     const normalized = normalizeLicenseCode(parsed.data.code);
     if (!normalized) {
       recordFailure(rateKey, config.loginRateLimit);
-      await logActivation(null, "login_fail", ip, request.headers["user-agent"] as string | undefined, {
+      await logActivation(null, "login_fail", ip, request.headers["user-agent"] as string | undefined, buildActivationMeta(parsed.data, {
         reason: "invalid_format",
-      });
+        codePrefix: codePrefixFromInput(parsed.data.code),
+      }));
       return loginError(reply, 401, "INVALID_CODE", "授权码无效或已停用");
     }
 
@@ -101,17 +124,19 @@ export async function registerAuthRoutes(app: FastifyInstance, config: AppConfig
 
     if (!row || row.status !== "active") {
       recordFailure(rateKey, config.loginRateLimit);
-      await logActivation(row?.id ?? null, "login_fail", ip, request.headers["user-agent"] as string | undefined, {
+      await logActivation(row?.id ?? null, "login_fail", ip, request.headers["user-agent"] as string | undefined, buildActivationMeta(parsed.data, {
         reason: "invalid_or_disabled",
-      });
+        codePrefix: codePrefixFromNormalized(normalized),
+      }));
       return loginError(reply, 401, "INVALID_CODE", "授权码无效或已停用");
     }
 
     if (row.expiresAt && row.expiresAt <= new Date()) {
       recordFailure(rateKey, config.loginRateLimit);
-      await logActivation(row.id, "login_fail", ip, request.headers["user-agent"] as string | undefined, {
+      await logActivation(row.id, "login_fail", ip, request.headers["user-agent"] as string | undefined, buildActivationMeta(parsed.data, {
         reason: "code_expired",
-      });
+        codePrefix: codePrefixFromNormalized(normalized),
+      }));
       return loginError(reply, 403, "CODE_EXPIRED", "授权码已过期");
     }
 
@@ -125,10 +150,16 @@ export async function registerAuthRoutes(app: FastifyInstance, config: AppConfig
       const activeCount = await countActiveSessions(row.id, config);
       if (activeCount >= row.maxDevices) {
         const usage = await getSessionUsage(row.id, config);
+        await logActivation(row.id, "login_fail", ip, request.headers["user-agent"] as string | undefined, buildActivationMeta(parsed.data, {
+          reason: "device_limit",
+          codePrefix: codePrefixFromNormalized(normalized),
+          devicesUsed: usage.used,
+          devicesMax: usage.max,
+        }));
         return reply.code(409).send({
           ok: false,
           code: "DEVICE_LIMIT",
-          message: "设备位已满，请先解绑旧设备或联系客服",
+          message: "该授权码已在其他设备上使用，请在原设备解除绑定或联系管理员",
           devicesUsed: usage.used,
           devicesMax: usage.max,
         });
@@ -146,9 +177,7 @@ export async function registerAuthRoutes(app: FastifyInstance, config: AppConfig
     setSessionCookie(reply, session.token, session.expiresAt, config.cookieSecure);
     const usage = await getSessionUsage(row.id, config);
 
-    await logActivation(row.id, "login_success", ip, request.headers["user-agent"] as string | undefined, {
-      deviceId: parsed.data.deviceId,
-    });
+    await logActivation(row.id, "login_success", ip, request.headers["user-agent"] as string | undefined, buildActivationMeta(parsed.data));
 
     return reply.send({
       ok: true,
@@ -162,8 +191,23 @@ export async function registerAuthRoutes(app: FastifyInstance, config: AppConfig
     const token = readSessionCookie(request);
     const resolved = await resolveSessionFromCookie(token, config, ip);
     if (resolved.ok) {
+      let logoutMeta: Record<string, unknown> | undefined;
+      if (token) {
+        const sessionTokenHash = hashSessionToken(token, config.sessionSecret);
+        const sessionRow = await db
+          .select({ deviceId: sessions.deviceId, deviceLabel: sessions.deviceLabel })
+          .from(sessions)
+          .where(eq(sessions.sessionTokenHash, sessionTokenHash))
+          .limit(1);
+        if (sessionRow[0]) {
+          logoutMeta = {
+            deviceId: sessionRow[0].deviceId,
+            ...(sessionRow[0].deviceLabel ? { deviceLabel: sessionRow[0].deviceLabel } : {}),
+          };
+        }
+      }
       await deleteSessionByToken(token, config);
-      await logActivation(resolved.licenseCodeId, "logout", ip, request.headers["user-agent"] as string | undefined);
+      await logActivation(resolved.licenseCodeId, "logout", ip, request.headers["user-agent"] as string | undefined, logoutMeta);
     }
     clearSessionCookie(reply);
     return reply.send({ ok: true });

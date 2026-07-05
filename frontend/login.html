@@ -4,14 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>激活授权</title>
-    <link rel="stylesheet" href="./login.css" />
+    <link rel="stylesheet" href="./login.css?v=2" />
   </head>
   <body>
     <main class="login-shell">
       <section class="login-card">
         <p class="login-kicker"></p>
         <h1>输入授权码</h1>
-        <p class="login-lead">激活后可在此设备访问。每码支持 <strong id="maxDevices">2</strong> 台设备。</p>
+        <p class="login-lead">
+          激活后可在此设备访问，
+          <span class="login-lead-device">每码可支持 <strong id="maxDevices">1</strong> 台设备。</span>
+        </p>
 
         <form id="loginForm" class="login-form">
           <label for="codeInput">授权码</label>
@@ -26,19 +29,38 @@
             maxlength="17"
           />
           <p id="deviceUsage" class="device-usage" hidden></p>
-          <p id="errorBox" class="error-box" hidden></p>
+          <div id="errorPanel" class="error-panel" hidden>
+            <p id="errorBox" class="error-box"></p>
+            <button id="unbindHelpButton" class="help-link-button" type="button" hidden>如何解绑？</button>
+          </div>
           <button id="submitButton" type="submit">激活并进入</button>
         </form>
 
         <div class="login-help">
-          <p>设备位已满？可先在本机解除绑定，或通过以下方式联系管理员：</p>
+          <p id="loginHelpLead">激活遇到问题？可通过以下方式联系管理员：</p>
           <ul>
+            <li>小红书：<a href="https://xhslink.com/m/51t6FHAQgIA" target="_blank" rel="noopener noreferrer">Randy腿哥</a></li>
             <li>邮箱：<a id="contactEmail" href="mailto:103620995@qq.com">103620995@qq.com</a></li>
           </ul>
           <button id="logoutButton" class="ghost-button" type="button" hidden>解除本机绑定</button>
         </div>
       </section>
     </main>
+
+    <dialog id="unbindHelpDialog" class="unbind-help-dialog" aria-labelledby="unbindHelpTitle">
+      <h2 id="unbindHelpTitle">如何解除设备绑定</h2>
+      <p>若提示授权码已在其他设备使用，需要在<strong>已绑定的那台设备</strong>上操作：</p>
+      <ol>
+        <li>打开周期表页面（保持已登录状态）</li>
+        <li>滚动到页面最底部</li>
+        <li>点击右下角<strong>「解除本机绑定」</strong>按钮</li>
+        <li>回到当前设备，重新输入授权码激活</li>
+      </ol>
+      <p class="unbind-help-note">解绑后，该授权码才能在新设备上使用。</p>
+      <form method="dialog">
+        <button type="submit" class="dialog-close-button">知道了</button>
+      </form>
+    </dialog>
     <script src="./login.js"></script>
   </body>
 </html>

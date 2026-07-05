@@ -32,7 +32,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD min 8 chars}
       ADMIN_SESSION_TTL_HOURS: ${ADMIN_SESSION_TTL_HOURS:-24}
       SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-90}
-      MAX_DEVICES_DEFAULT: ${MAX_DEVICES_DEFAULT:-2}
+      MAX_DEVICES_DEFAULT: ${MAX_DEVICES_DEFAULT:-1}
       IDLE_RELEASE_DAYS: ${IDLE_RELEASE_DAYS:-30}
       LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-5}
       CONTACT_WECHAT: ${CONTACT_WECHAT:-请联系客服微信（待配置）}
@@ -41,7 +41,7 @@ services:
       PORT: "4000"
       HOST: 0.0.0.0
     ports:
-      - "127.0.0.1:3041:4000"
+      - "3041:4000"
 
   ptoe_web:
     build:
@@ -53,7 +53,7 @@ services:
     depends_on:
       - ptoe_api
     ports:
-      - "127.0.0.1:3040:80"
+      - "3040:80"
 
 volumes:
   ptoe_pgdata:

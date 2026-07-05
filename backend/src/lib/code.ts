@@ -19,6 +19,19 @@ export function formatLicenseCode(normalized: string): string {
   return `PTOE-${suffix.slice(0, 4)}-${suffix.slice(4)}`;
 }
 
+/** 从用户输入提取可展示的前缀（失败日志用，允许不完整授权码） */
+export function codePrefixFromInput(input: string): string | null {
+  const stripped = input.trim().replace(/[\s-]+/g, "").toUpperCase();
+  if (!stripped.startsWith("PTOE")) {
+    return null;
+  }
+  const suffix = stripped.slice(4).replace(/[^A-Z0-9]/g, "");
+  if (!suffix) {
+    return "PTOE-";
+  }
+  return `PTOE-${suffix.slice(0, 4)}`;
+}
+
 export function generateLicenseCode(): { normalized: string; formatted: string } {
   let suffix = "";
   for (let i = 0; i < 8; i += 1) {

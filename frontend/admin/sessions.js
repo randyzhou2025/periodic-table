@@ -24,6 +24,7 @@ function renderSessions(rows) {
         <td>${row.buyerNote || "—"}</td>
         <td title="${row.deviceId}">${shortId(row.deviceId)}</td>
         <td>${row.lastIp || "—"}</td>
+        <td class="log-location">${row.ipLocation || "—"}</td>
         <td>${AdminShell.formatDate(row.lastSeenAt)}</td>
         <td>${AdminShell.formatDate(row.expiresAt)}</td>
         <td>

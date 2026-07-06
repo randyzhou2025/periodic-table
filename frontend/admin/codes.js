@@ -12,6 +12,57 @@ function clearAdminError() {
   AdminShell.showMessage(adminError, "");
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+}
+
+function showNewCode(code) {
+  newCodeBox.hidden = false;
+  newCodeBox.innerHTML = `
+    <span class="new-code-label">新授权码（请立即复制）：</span>
+    <code class="new-code-value">${escapeHtml(code)}</code>
+    <button type="button" class="copy-code-button" data-code="${escapeHtml(code)}">复制</button>
+  `;
+}
+
+newCodeBox?.addEventListener("click", async (event) => {
+  const button = event.target.closest(".copy-code-button");
+  if (!button) return;
+
+  const code = button.dataset.code;
+  if (!code) return;
+
+  const originalLabel = button.textContent;
+  try {
+    await copyText(code);
+    button.textContent = "已复制";
+    window.setTimeout(() => {
+      button.textContent = originalLabel;
+    }, 1800);
+  } catch {
+    showAdminError("复制失败，请手动选中授权码复制");
+  }
+});
+
 function renderCodes(codes) {
   codesBody.innerHTML = codes
     .map(
@@ -47,8 +98,7 @@ async function createCode() {
     method: "POST",
     body: JSON.stringify({ buyerNote: buyerNoteInput.value.trim() || undefined }),
   });
-  newCodeBox.hidden = false;
-  newCodeBox.textContent = `新授权码（请立即复制）：${data.code}`;
+  showNewCode(data.code);
   buyerNoteInput.value = "";
   await loadCodes();
 }

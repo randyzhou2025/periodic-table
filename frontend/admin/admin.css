@@ -184,12 +184,40 @@ td {
 }
 
 .new-code-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
   padding: 12px;
   border: 1px solid rgba(255, 200, 74, 0.35);
   border-radius: 8px;
   background: rgba(255, 200, 74, 0.08);
   color: var(--gold);
   font-weight: 800;
+}
+
+.new-code-label {
+  color: rgba(247, 241, 230, 0.88);
+  font-weight: 700;
+}
+
+.new-code-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
+
+.copy-code-button {
+  min-height: 32px;
+  padding: 0 14px;
+  color: #16130f;
+  border: 1px solid rgba(255, 200, 74, 0.72);
+  border-radius: 999px;
+  background: var(--gold);
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 13px;
 }
 
 @media (max-width: 720px) {

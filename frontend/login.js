@@ -116,6 +116,22 @@ async function loadPublicConfig() {
   }
 }
 
+async function waitForAuthenticatedSession(maxAttempts = 6) {
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const res = await fetch(`${API_BASE}/session/status`, { credentials: "include" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated) {
+        return true;
+      }
+    }
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 80 * (attempt + 1));
+    });
+  }
+  return false;
+}
+
 async function checkExistingSession() {
   const res = await fetch(`${API_BASE}/session/status`, { credentials: "include" });
   if (!res.ok) return;
@@ -169,6 +185,14 @@ form?.addEventListener("submit", async (event) => {
     if (data.devicesUsed != null && data.devicesMax != null) {
       deviceUsage.hidden = false;
       deviceUsage.textContent = `已绑定 ${data.devicesUsed}/${data.devicesMax} 台设备`;
+    }
+
+    const sessionReady = await waitForAuthenticatedSession();
+    if (!sessionReady) {
+      showError(
+        "激活已成功，但浏览器未能保存登录状态。请检查是否开启 Cookie、关闭无痕/隐私模式，或尝试关闭「阻止跨站跟踪」后重试。"
+      );
+      return;
     }
 
     window.location.replace(getNextPath());

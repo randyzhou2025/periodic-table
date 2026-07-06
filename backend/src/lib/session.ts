@@ -59,8 +59,8 @@ export function setSessionCookie(reply: FastifyReply, token: string, expiresAt: 
   });
 }
 
-export function clearSessionCookie(reply: FastifyReply): void {
-  reply.clearCookie(SESSION_COOKIE, { path: COOKIE_PATH });
+export function clearSessionCookie(reply: FastifyReply, secure: boolean): void {
+  reply.clearCookie(SESSION_COOKIE, { path: COOKIE_PATH, secure, sameSite: "lax" });
 }
 
 export async function createOrRefreshSession(params: {

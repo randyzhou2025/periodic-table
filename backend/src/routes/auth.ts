@@ -209,7 +209,7 @@ export async function registerAuthRoutes(app: FastifyInstance, config: AppConfig
       await deleteSessionByToken(token, config);
       await logActivation(resolved.licenseCodeId, "logout", ip, request.headers["user-agent"] as string | undefined, logoutMeta);
     }
-    clearSessionCookie(reply);
+    clearSessionCookie(reply, config.cookieSecure);
     return reply.send({ ok: true });
   });
 }

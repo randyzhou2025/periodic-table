@@ -82,6 +82,31 @@
   background: rgba(0, 0, 0, 0.28);
 }
 
+.note-input {
+  width: 100%;
+  min-width: 120px;
+  min-height: 32px;
+  padding: 0 10px;
+  color: var(--paper);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 13px;
+}
+
+.note-input:focus {
+  outline: none;
+  border-color: rgba(255, 200, 74, 0.55);
+}
+
+.note-input:disabled {
+  opacity: 0.6;
+}
+
+.note-input::placeholder {
+  color: rgba(247, 241, 230, 0.38);
+}
+
 .toolbar button,
 #loginButton {
   min-height: 42px;
@@ -181,6 +206,54 @@ td {
   background: transparent;
   cursor: pointer;
   font-size: 12px;
+}
+
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.pagination-summary {
+  margin: 0;
+  color: rgba(247, 241, 230, 0.72);
+  font-size: 13px;
+}
+
+.pagination-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-status {
+  color: rgba(247, 241, 230, 0.88);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pagination-button {
+  min-height: 32px;
+  padding: 0 14px;
+  color: var(--paper);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pagination-button:hover:not(:disabled) {
+  border-color: rgba(255, 200, 74, 0.55);
+}
+
+.pagination-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .new-code-box {

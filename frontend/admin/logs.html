@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>激活日志 · 元素周期表</title>
     <link rel="stylesheet" href="/ptoe/login.css?v=2" />
-    <link rel="stylesheet" href="/ptoe/admin/admin.css?v=6" />
+    <link rel="stylesheet" href="/ptoe/admin/admin.css?v=9" />
   </head>
   <body>
     <main class="login-shell admin-shell">
@@ -31,7 +31,7 @@
           <div>
             <p class="login-kicker">Periodic Table Admin</p>
             <h1>激活日志</h1>
-            <p class="login-lead">记录授权码激活、失败与解绑操作，最近 100 条。</p>
+            <p class="login-lead">记录授权码激活、失败与解绑操作，每页 20 条。</p>
           </div>
           <button id="logoutButton" class="ghost-button" type="button">退出登录</button>
         </div>
@@ -53,10 +53,11 @@
             </thead>
             <tbody id="logsBody"></tbody>
           </table>
+          <div id="logsPagination" class="pagination-bar" hidden></div>
         </div>
       </section>
     </main>
-    <script src="/ptoe/admin/common.js?v=5"></script>
-    <script src="/ptoe/admin/logs.js?v=7"></script>
+    <script src="/ptoe/admin/common.js?v=6"></script>
+    <script src="/ptoe/admin/logs.js?v=8"></script>
   </body>
 </html>

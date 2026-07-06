@@ -1,8 +1,12 @@
 const createCodeButton = document.getElementById("createCodeButton");
 const buyerNoteInput = document.getElementById("buyerNoteInput");
 const codesBody = document.getElementById("codesBody");
+const codesPagination = document.getElementById("codesPagination");
 const adminError = document.getElementById("adminError");
 const newCodeBox = document.getElementById("newCodeBox");
+const PAGE_SIZE = 100;
+
+let currentPage = 1;
 
 function showAdminError(message) {
   AdminShell.showMessage(adminError, message);
@@ -71,7 +75,17 @@ function renderCodes(codes) {
         <td>${code.codePrefix}</td>
         <td><span class="tag ${code.status}">${code.status === "active" ? "启用" : "停用"}</span></td>
         <td>${code.activeSessions}/${code.maxDevices}</td>
-        <td>${code.buyerNote || "—"}</td>
+        <td>
+          <input
+            class="note-input"
+            type="text"
+            data-id="${code.id}"
+            data-original="${escapeHtml(code.buyerNote || "")}"
+            value="${escapeHtml(code.buyerNote || "")}"
+            placeholder="添加备注"
+            maxlength="255"
+          />
+        </td>
         <td>${AdminShell.formatDate(code.createdAt)}</td>
         <td>
           <div class="actions">
@@ -86,10 +100,16 @@ function renderCodes(codes) {
     .join("");
 }
 
-async function loadCodes() {
+async function loadCodes(page = currentPage) {
   clearAdminError();
-  const data = await AdminShell.api("/admin/codes");
-  renderCodes(data.codes || []);
+  currentPage = page;
+  const data = await AdminShell.api(`/admin/codes?page=${page}&limit=${PAGE_SIZE}`);
+  const codes = data.codes || [];
+  renderCodes(codes);
+  AdminShell.renderPagination(codesPagination, data.pagination, loadCodes);
+  if (codes.length === 0 && page > 1) {
+    await loadCodes(page - 1);
+  }
 }
 
 async function createCode() {
@@ -100,7 +120,29 @@ async function createCode() {
   });
   showNewCode(data.code);
   buyerNoteInput.value = "";
-  await loadCodes();
+  await loadCodes(1);
+}
+
+async function saveBuyerNote(input) {
+  const id = input.dataset.id;
+  const buyerNote = input.value.trim();
+  const original = input.dataset.original ?? "";
+  if (buyerNote === original) return;
+
+  input.disabled = true;
+  try {
+    await AdminShell.api(`/admin/codes/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ buyerNote: buyerNote || null }),
+    });
+    input.dataset.original = buyerNote;
+    clearAdminError();
+  } catch (error) {
+    input.value = original;
+    showAdminError(error.message);
+  } finally {
+    input.disabled = false;
+  }
 }
 
 async function handleTableClick(event) {
@@ -120,7 +162,7 @@ async function handleTableClick(event) {
     } else if (action === "revoke") {
       await AdminShell.api(`/admin/codes/${id}/revoke-all`, { method: "POST" });
     }
-    await loadCodes();
+    await loadCodes(currentPage);
   } catch (error) {
     showAdminError(error.message);
   }
@@ -136,4 +178,17 @@ createCodeButton?.addEventListener("click", async () => {
 
 codesBody?.addEventListener("click", handleTableClick);
 
-bootAdminPage("codes", loadCodes);
+codesBody?.addEventListener("focusout", (event) => {
+  const input = event.target.closest(".note-input");
+  if (!input) return;
+  saveBuyerNote(input);
+});
+
+codesBody?.addEventListener("keydown", (event) => {
+  const input = event.target.closest(".note-input");
+  if (!input || event.key !== "Enter") return;
+  event.preventDefault();
+  input.blur();
+});
+
+bootAdminPage("codes", () => loadCodes(1));

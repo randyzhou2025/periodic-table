@@ -151,10 +151,46 @@ async function initAdminPage({ page, onReady }) {
   await checkSession(onReady);
 }
 
+function renderPagination(mount, pagination, onPageChange) {
+  if (!mount || !pagination) return;
+  if (pagination.total <= 0) {
+    mount.hidden = true;
+    mount.innerHTML = "";
+    return;
+  }
+
+  const { page, totalPages, total, limit } = pagination;
+  const start = (page - 1) * limit + 1;
+  const end = Math.min(page * limit, total);
+
+  if (totalPages <= 1) {
+    mount.hidden = false;
+    mount.innerHTML = `<p class="pagination-summary">共 ${total} 条</p>`;
+    mount.onclick = null;
+    return;
+  }
+
+  mount.hidden = false;
+  mount.innerHTML = `
+    <p class="pagination-summary">共 ${total} 条，当前 ${start}-${end}</p>
+    <div class="pagination-actions">
+      <button type="button" class="pagination-button" data-page="${page - 1}" ${page <= 1 ? "disabled" : ""}>上一页</button>
+      <span class="pagination-status">第 ${page} / ${totalPages} 页</span>
+      <button type="button" class="pagination-button" data-page="${page + 1}" ${page >= totalPages ? "disabled" : ""}>下一页</button>
+    </div>`;
+
+  mount.onclick = (event) => {
+    const button = event.target.closest("button[data-page]");
+    if (!button || button.disabled) return;
+    onPageChange(Number(button.dataset.page));
+  };
+}
+
 window.AdminShell = {
   api,
   formatDate,
   initAdminPage,
+  renderPagination,
   showMessage,
 };
 

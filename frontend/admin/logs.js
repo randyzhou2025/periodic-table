@@ -1,5 +1,9 @@
 const logsBody = document.getElementById("logsBody");
+const logsPagination = document.getElementById("logsPagination");
 const adminError = document.getElementById("adminError");
+const PAGE_SIZE = 20;
+
+let currentPage = 1;
 
 const EVENT_LABELS = {
   login_success: "激活成功",
@@ -80,10 +84,16 @@ function renderLogs(logs) {
     .join("");
 }
 
-async function loadLogs() {
+async function loadLogs(page = currentPage) {
   clearAdminError();
-  const data = await AdminShell.api("/admin/logs?limit=100");
-  renderLogs(data.logs || []);
+  currentPage = page;
+  const data = await AdminShell.api(`/admin/logs?page=${page}&limit=${PAGE_SIZE}`);
+  const logs = data.logs || [];
+  renderLogs(logs);
+  AdminShell.renderPagination(logsPagination, data.pagination, loadLogs);
+  if (logs.length === 0 && page > 1) {
+    await loadLogs(page - 1);
+  }
 }
 
-bootAdminPage("logs", loadLogs);
+bootAdminPage("logs", () => loadLogs(1));

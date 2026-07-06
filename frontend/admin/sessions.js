@@ -1,5 +1,9 @@
 const sessionsBody = document.getElementById("sessionsBody");
+const sessionsPagination = document.getElementById("sessionsPagination");
 const adminError = document.getElementById("adminError");
+const PAGE_SIZE = 100;
+
+let currentPage = 1;
 
 function showAdminError(message) {
   AdminShell.showMessage(adminError, message);
@@ -37,10 +41,16 @@ function renderSessions(rows) {
     .join("");
 }
 
-async function loadSessions() {
+async function loadSessions(page = currentPage) {
   clearAdminError();
-  const data = await AdminShell.api("/admin/sessions");
-  renderSessions(data.sessions || []);
+  currentPage = page;
+  const data = await AdminShell.api(`/admin/sessions?page=${page}&limit=${PAGE_SIZE}`);
+  const sessions = data.sessions || [];
+  renderSessions(sessions);
+  AdminShell.renderPagination(sessionsPagination, data.pagination, loadSessions);
+  if (sessions.length === 0 && page > 1) {
+    await loadSessions(page - 1);
+  }
 }
 
 async function handleTableClick(event) {
@@ -51,7 +61,7 @@ async function handleTableClick(event) {
   try {
     if (button.dataset.action === "revoke-session") {
       await AdminShell.api(`/admin/sessions/${button.dataset.id}`, { method: "DELETE" });
-      await loadSessions();
+      await loadSessions(currentPage);
     }
   } catch (error) {
     showAdminError(error.message);
@@ -60,4 +70,4 @@ async function handleTableClick(event) {
 
 sessionsBody?.addEventListener("click", handleTableClick);
 
-bootAdminPage("sessions", loadSessions);
+bootAdminPage("sessions", () => loadSessions(1));

@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db/index.js";
 import { activationLogs, licenseCodes, sessions } from "../db/schema.js";
@@ -46,6 +46,18 @@ const patchCodeSchema = z.object({
   expiresAt: z.string().datetime().optional().nullable(),
 });
 
+function parsePagination(query: { page?: string; limit?: string }, defaultLimit: number, maxLimit: number) {
+  const page = Math.max(1, Number(query.page ?? 1) || 1);
+  const limit = Math.min(Math.max(1, Number(query.limit ?? defaultLimit) || defaultLimit), maxLimit);
+  const offset = (page - 1) * limit;
+  return { page, limit, offset };
+}
+
+function buildPagination(page: number, limit: number, total: number) {
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  return { page, limit, total, totalPages };
+}
+
 export async function registerAdminRoutes(app: FastifyInstance, config: AppConfig): Promise<void> {
   const guard = authenticateAdmin(config);
 
@@ -85,8 +97,16 @@ export async function registerAdminRoutes(app: FastifyInstance, config: AppConfi
     return reply.send({ ok: true, authenticated: true, username: config.adminUsername });
   });
 
-  app.get("/admin/codes", { preHandler: guard }, async () => {
-    const rows = await db.select().from(licenseCodes).orderBy(desc(licenseCodes.createdAt));
+  app.get("/admin/codes", { preHandler: guard }, async (request) => {
+    const { page, limit, offset } = parsePagination(request.query as { page?: string; limit?: string }, 100, 100);
+    const [totalRow] = await db.select({ count: count() }).from(licenseCodes);
+    const total = Number(totalRow?.count ?? 0);
+    const rows = await db
+      .select()
+      .from(licenseCodes)
+      .orderBy(desc(licenseCodes.createdAt))
+      .limit(limit)
+      .offset(offset);
     const enriched = await Promise.all(
       rows.map(async (row) => ({
         id: row.id,
@@ -99,7 +119,7 @@ export async function registerAdminRoutes(app: FastifyInstance, config: AppConfi
         activeSessions: await countActiveSessions(row.id, config),
       }))
     );
-    return { codes: enriched };
+    return { codes: enriched, pagination: buildPagination(page, limit, total) };
   });
 
   app.post("/admin/codes", { preHandler: guard }, async (request, reply) => {
@@ -185,7 +205,9 @@ export async function registerAdminRoutes(app: FastifyInstance, config: AppConfi
   });
 
   app.get("/admin/logs", { preHandler: guard }, async (request) => {
-    const limit = Math.min(Number((request.query as { limit?: string }).limit ?? 100), 200);
+    const { page, limit, offset } = parsePagination(request.query as { page?: string; limit?: string }, 20, 20);
+    const [totalRow] = await db.select({ count: count() }).from(activationLogs);
+    const total = Number(totalRow?.count ?? 0);
     const rows = await db
       .select({
         log: activationLogs,
@@ -195,7 +217,8 @@ export async function registerAdminRoutes(app: FastifyInstance, config: AppConfi
       .from(activationLogs)
       .leftJoin(licenseCodes, eq(activationLogs.licenseCodeId, licenseCodes.id))
       .orderBy(desc(activationLogs.createdAt))
-      .limit(limit);
+      .limit(limit)
+      .offset(offset);
     return {
       logs: rows.map((row) => {
         const metaPrefix =
@@ -212,10 +235,14 @@ export async function registerAdminRoutes(app: FastifyInstance, config: AppConfi
           buyerNote: row.buyerNote,
         };
       }),
+      pagination: buildPagination(page, limit, total),
     };
   });
 
-  app.get("/admin/sessions", { preHandler: guard }, async () => {
+  app.get("/admin/sessions", { preHandler: guard }, async (request) => {
+    const { page, limit, offset } = parsePagination(request.query as { page?: string; limit?: string }, 100, 100);
+    const [totalRow] = await db.select({ count: count() }).from(sessions);
+    const total = Number(totalRow?.count ?? 0);
     const rows = await db
       .select({
         session: sessions,
@@ -225,7 +252,9 @@ export async function registerAdminRoutes(app: FastifyInstance, config: AppConfi
       })
       .from(sessions)
       .innerJoin(licenseCodes, eq(sessions.licenseCodeId, licenseCodes.id))
-      .orderBy(desc(sessions.lastSeenAt));
+      .orderBy(desc(sessions.lastSeenAt))
+      .limit(limit)
+      .offset(offset);
 
     const now = new Date();
     const idleCutoff = new Date(now);
@@ -252,6 +281,7 @@ export async function registerAdminRoutes(app: FastifyInstance, config: AppConfi
           active,
         };
       }),
+      pagination: buildPagination(page, limit, total),
     };
   });
 }

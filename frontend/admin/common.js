@@ -35,13 +35,15 @@ function mountNav(activeId) {
 }
 
 async function api(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (options.body !== undefined && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
+    headers,
   });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401) {

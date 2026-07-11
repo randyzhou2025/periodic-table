@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>激活授权</title>
-    <link rel="stylesheet" href="./login.css?v=2" />
+    <link rel="stylesheet" href="./login.css?v=3" />
   </head>
   <body>
     <main class="login-shell">
@@ -32,6 +32,7 @@
           <div id="errorPanel" class="error-panel" hidden>
             <p id="errorBox" class="error-box"></p>
             <button id="unbindHelpButton" class="help-link-button" type="button" hidden>如何解绑？</button>
+            <button id="selfUnbindButton" class="self-unbind-button" type="button" hidden>解除授权码设备绑定</button>
           </div>
           <button id="submitButton" type="submit">激活并进入</button>
         </form>
@@ -39,7 +40,7 @@
         <div class="login-help">
           <p id="loginHelpLead">激活遇到问题？可通过以下方式联系管理员：</p>
           <ul>
-            <li>小红书：<a href="https://xhslink.com/m/51t6FHAQgIA" target="_blank" rel="noopener noreferrer">Randy腿哥</a></li>
+            <li>小红书：<a href="https://xhslink.com/m/51t6FHAQgIA" target="_blank" rel="noopener noreferrer">RandyOS</a></li>
             <li>邮箱：<a id="contactEmail" href="mailto:103620995@qq.com">103620995@qq.com</a></li>
           </ul>
           <button id="logoutButton" class="ghost-button" type="button" hidden>解除本机绑定</button>
@@ -49,7 +50,7 @@
 
     <dialog id="unbindHelpDialog" class="unbind-help-dialog" aria-labelledby="unbindHelpTitle">
       <h2 id="unbindHelpTitle">如何解除设备绑定</h2>
-      <p>若提示授权码已在其他设备使用，需要在<strong>已绑定的那台设备</strong>上操作：</p>
+      <p>若提示授权码已在其他设备使用，可在本页点击<strong>「解除授权码设备绑定」</strong>，或前往已绑定设备操作：</p>
       <ol>
         <li>打开周期表页面（保持已登录状态）</li>
         <li>滚动到页面最底部</li>
@@ -61,6 +62,6 @@
         <button type="submit" class="dialog-close-button">知道了</button>
       </form>
     </dialog>
-    <script src="./login.js?v=3"></script>
+    <script src="./login.js?v=5"></script>
   </body>
 </html>

@@ -36,6 +36,11 @@ const loginSchema = z.object({
   deviceInfo: deviceInfoSchema,
 });
 
+const unbindSelfSchema = z.object({
+  code: z.string().min(8).max(32),
+  deviceId: z.string().min(8).max(128).optional(),
+});
+
 function buildActivationMeta(
   parsed: z.infer<typeof loginSchema>,
   extra?: Record<string, unknown>
@@ -184,6 +189,64 @@ export async function registerAuthRoutes(app: FastifyInstance, config: AppConfig
       devicesUsed: usage.used,
       devicesMax: usage.max,
     });
+  });
+
+  app.post("/unbind-self", async (request, reply) => {
+    const ip = clientIpFromRequest(request.headers as Record<string, unknown>, request.ip);
+    const parsed = unbindSelfSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return loginError(reply, 400, "INVALID_REQUEST", "请填写有效的授权码");
+    }
+
+    const rateKey = `unbind:${ip}`;
+    if (!checkRateLimit(rateKey, config.loginRateLimit)) {
+      return loginError(reply, 429, "RATE_LIMITED", "尝试次数过多，请稍后再试");
+    }
+
+    const normalized = normalizeLicenseCode(parsed.data.code);
+    if (!normalized) {
+      recordFailure(rateKey, config.loginRateLimit);
+      return loginError(reply, 401, "INVALID_CODE", "授权码无效或已停用");
+    }
+
+    const codeHash = hashLicenseCode(normalized, config.sessionSecret);
+    const license = await db.select().from(licenseCodes).where(eq(licenseCodes.codeHash, codeHash)).limit(1);
+    const row = license[0];
+
+    if (!row || row.status !== "active") {
+      recordFailure(rateKey, config.loginRateLimit);
+      return loginError(reply, 401, "INVALID_CODE", "授权码无效或已停用");
+    }
+
+    if (row.expiresAt && row.expiresAt <= new Date()) {
+      return loginError(reply, 403, "CODE_EXPIRED", "授权码已过期");
+    }
+
+    let deleted = await db
+      .delete(sessions)
+      .where(
+        parsed.data.deviceId
+          ? and(eq(sessions.licenseCodeId, row.id), eq(sessions.deviceId, parsed.data.deviceId))
+          : eq(sessions.licenseCodeId, row.id)
+      )
+      .returning({ id: sessions.id, deviceId: sessions.deviceId, deviceLabel: sessions.deviceLabel });
+
+    if (deleted.length === 0 && parsed.data.deviceId) {
+      deleted = await db
+        .delete(sessions)
+        .where(eq(sessions.licenseCodeId, row.id))
+        .returning({ id: sessions.id, deviceId: sessions.deviceId, deviceLabel: sessions.deviceLabel });
+    }
+
+    await logActivation(row.id, "logout", ip, request.headers["user-agent"] as string | undefined, {
+      reason: "self_unbind",
+      codePrefix: codePrefixFromNormalized(normalized),
+      deviceId: parsed.data.deviceId,
+      clearedSessions: deleted.length,
+    });
+
+    clearSessionCookie(reply, config.cookieSecure);
+    return reply.send({ ok: true, cleared: deleted.length });
   });
 
   app.post("/logout", async (request, reply) => {

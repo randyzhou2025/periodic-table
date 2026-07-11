@@ -22,6 +22,7 @@ const REASON_LABELS = {
   invalid_or_disabled: "授权码无效或已停用",
   code_expired: "授权码已过期",
   device_limit: "设备位已满",
+  self_unbind: "用户自助解绑",
 };
 
 function showAdminError(message) {

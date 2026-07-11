@@ -119,6 +119,30 @@ h1 {
   flex: 0 0 auto;
 }
 
+.self-unbind-button {
+  flex: 1 1 100%;
+  min-height: 40px;
+  margin-top: 4px;
+  padding: 0 14px;
+  color: var(--paper);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.self-unbind-button:hover:not(:disabled) {
+  border-color: rgba(72, 216, 155, 0.55);
+  color: var(--green);
+}
+
+.self-unbind-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 .login-form button[type="submit"],
 .login-form #loginButton {
   width: 100%;

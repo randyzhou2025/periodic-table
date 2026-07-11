@@ -10,6 +10,7 @@ const submitButton = document.getElementById("submitButton");
 const logoutButton = document.getElementById("logoutButton");
 const loginHelpLead = document.getElementById("loginHelpLead");
 const unbindHelpButton = document.getElementById("unbindHelpButton");
+const selfUnbindButton = document.getElementById("selfUnbindButton");
 const unbindHelpDialog = document.getElementById("unbindHelpDialog");
 const maxDevicesEl = document.getElementById("maxDevices");
 const contactWechatEl = document.getElementById("contactWechat");
@@ -79,12 +80,14 @@ function showError(message, options = {}) {
   errorPanel.hidden = false;
   errorBox.textContent = message;
   unbindHelpButton.hidden = !options.showUnbindHelp;
+  selfUnbindButton.hidden = !options.showSelfUnbind;
 }
 
 function clearError() {
   errorPanel.hidden = true;
   errorBox.textContent = "";
   unbindHelpButton.hidden = true;
+  selfUnbindButton.hidden = true;
 }
 
 function resetLoginHelp() {
@@ -149,6 +152,52 @@ async function logoutCurrentDevice() {
   showError("已解除本机绑定，可重新输入授权码。");
 }
 
+async function unbindByCode() {
+  const code = codeInput.value.trim();
+  if (!code) {
+    showError("请先填写授权码", { showSelfUnbind: true });
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "将解除该授权码下的设备绑定（若本机未成功登录，也会清除服务器上的占用记录）。解绑后请重新点击「激活并进入」。确定继续？"
+  );
+  if (!confirmed) return;
+
+  selfUnbindButton.disabled = true;
+  const originalLabel = selfUnbindButton.textContent;
+  selfUnbindButton.textContent = "解绑中…";
+
+  try {
+    const res = await fetch(`${API_BASE}/unbind-self`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code,
+        deviceId: getDeviceId(),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showError(data.message || "解绑失败，请稍后重试", { showSelfUnbind: true, showUnbindHelp: true });
+      return;
+    }
+
+    deviceUsage.hidden = true;
+    showError(
+      data.cleared > 0
+        ? "已解除设备绑定，请重新点击「激活并进入」。"
+        : "当前没有已绑定的设备，请直接重新激活。"
+    );
+  } catch {
+    showError("网络异常，请检查连接后重试", { showSelfUnbind: true, showUnbindHelp: true });
+  } finally {
+    selfUnbindButton.disabled = false;
+    selfUnbindButton.textContent = originalLabel;
+  }
+}
+
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
   resetLoginHelp();
@@ -175,7 +224,10 @@ form?.addEventListener("submit", async (event) => {
           deviceUsage.textContent = `当前已用 ${data.devicesUsed}/${data.devicesMax} 台设备`;
         }
         logoutButton.hidden = true;
-        showError(data.message || "激活失败，请稍后重试", { showUnbindHelp: true });
+        showError(data.message || "激活失败，请稍后重试", {
+          showUnbindHelp: true,
+          showSelfUnbind: true,
+        });
       } else {
         showError(data.message || "激活失败，请稍后重试");
       }
@@ -190,7 +242,8 @@ form?.addEventListener("submit", async (event) => {
     const sessionReady = await waitForAuthenticatedSession();
     if (!sessionReady) {
       showError(
-        "激活已成功，但浏览器未能保存登录状态。请检查是否开启 Cookie、关闭无痕/隐私模式，或尝试关闭「阻止跨站跟踪」后重试。"
+        "激活已成功，但浏览器未能保存登录状态。建议使用 Chrome 浏览器访问；并请检查是否开启 Cookie、关闭无痕/隐私模式，或尝试关闭「阻止跨站跟踪」后重试。也可点击下方「解除授权码设备绑定」后重新激活。",
+        { showSelfUnbind: true }
       );
       return;
     }
@@ -209,6 +262,8 @@ codeInput?.addEventListener("input", () => {
 });
 
 logoutButton?.addEventListener("click", logoutCurrentDevice);
+
+selfUnbindButton?.addEventListener("click", unbindByCode);
 
 unbindHelpButton?.addEventListener("click", () => {
   unbindHelpDialog?.showModal();

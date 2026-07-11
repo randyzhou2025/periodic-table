@@ -16,6 +16,9 @@ deploy/.env.prod
 # Video work
 video_work/
 
+# Bug reports / repro assets
+bug/
+
 # Local style experiments
 frontend/src/styles.backup-before-brighter-elements.css
 frontend/src/styles.brighter-elements.css
